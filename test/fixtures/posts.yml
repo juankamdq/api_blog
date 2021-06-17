@@ -2,16 +2,14 @@
 
 one:
   title: MyString
-  content: MyText
+  content: MyString
   image: MyString
   category: one
-  date_created: 2021-06-15
   user: one
 
 two:
   title: MyString
-  content: MyText
+  content: MyString
   image: MyString
   category: two
-  date_created: 2021-06-15
   user: two

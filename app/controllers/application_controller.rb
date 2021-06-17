@@ -7,18 +7,15 @@ class ApplicationController < ActionController::API
     end
 
     def decode_token
+         
+        authorization = request.headers['Authorization']
 
-        if request.headers['Authorization']
-
-            byebug
-            encoded_token = request.headers['Authorization'].split(' ')[1]
-            
-            token = JWT.decode(encoded_token, 'secret', true, algorithm: 'HS256')
-            user = token[0]['user_id']
+        if authorization         
+            token = request.headers['Authorization'].split(' ')[1]   
+            decoded_token = JWT.decode(token, 'secret', true, algorithm: 'HS256')
+            @user_id = decoded_token[0]["user_id"]
         end
         
-        
-
     end
 
 

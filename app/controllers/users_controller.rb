@@ -6,14 +6,29 @@ class UsersController < ApplicationController
         @user = User.create(params_user)
 
         if @user.valid?
-           token = encode_token ({ id: @user.id})
+           token = encode_token ({ user_id: @user.id})
            render json: { Status: "ok", Token: token}
         else 
-            render json: { Message: "Account hasn't been created", Status: false}, status: un
+            render json: { Message: "Account hasn't been created", Status: false}, status: :ok
         end
         
+    end
 
+    def login
 
+        @user = User.find_by_email(params[:email])
+
+        if @user && @user.authenticate(params[:password])
+
+            token = encode_token ({ user_id: @user.id })
+            render json: { 
+                Message: "Welcome #{@user.email}",
+                Token: token
+            }
+
+        else 
+            render json: { Message: "Sorry email/password invalid!!!!"}, status: :not_found
+        end
     end
 
 
