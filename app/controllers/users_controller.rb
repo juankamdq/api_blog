@@ -1,5 +1,5 @@
 class UsersController < ApplicationController
-    #before_action :authorized, only: [:welcome]
+    before_action :authorized, only: [:welcome]
 
     def sign_up
 
@@ -9,7 +9,7 @@ class UsersController < ApplicationController
            token = encode_token ({ user_id: @user.id})
            render json: { Status: "ok", Token: token}
         else 
-            render json: { Message: "Account hasn't been created", Status: false}, status: :ok
+            render json: @user.errors 
         end
         
     end

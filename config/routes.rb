@@ -4,8 +4,14 @@ Rails.application.routes.draw do
   resources :categories 
   resources :users
   
+  #LOGIN
   post '/auth/sign_up', to: 'users#sign_up'
   post '/auth/login', to: 'users#login'
 
-  #get '/posts', to: 'posts#index'
+
+  #POSTS
+  get '/posts', to: 'posts#index'
+  put '/posts/soft_delete/:id', to: 'posts#soft_delete'
+
+  
 end

@@ -1,4 +1,5 @@
 class PostsController < ApplicationController
+    before_action :authorized, except: [:index, :show]
     before_action :decode_token, only: [:create, :update]
 
 
@@ -10,7 +11,7 @@ class PostsController < ApplicationController
 
     def index 
 
-        @posts = Post.all.order("created_at DESC")
+        @posts = Post.all.order("created_at DESC").where("status = true")
 
         # Get Params
         params_title = params[:title]
@@ -29,14 +30,15 @@ class PostsController < ApplicationController
     # GET POST ID
     def show
 
-        @post = Post.find_by_id(params[:id])
+        @post = Post.find_by(id:params[:id], status: true)
 
         if !@post.nil?
             render json: @post, status: :ok
         else
             render json: { 
-                status: false,
-                message: "Post not found"
+                message: "Post not found",
+                status: false
+                
             }
         end
          
@@ -52,14 +54,14 @@ class PostsController < ApplicationController
         # Recibo el Id del User por medio del before_action
         user = User.find(@user_id)
         post.user = user
-
+         
         category = Category.find_by_id(params[:category])
         return render json: { error: "Category not found"}, status: 404 if category.nil?
-        post.category = @category
+        post.category = category
         
      
         if post.save
-            render json: post, status: :ok
+            render json: post, status: :created
         else 
             render json: post.errors, status: :unprocessable_entity
         end
@@ -70,7 +72,7 @@ class PostsController < ApplicationController
     def update 
 
         # Obtengo los parametros y los busco en mi base
-        post = Post.find_by_id(params[:id])
+        post = Post.find_by(id:params[:id], status: true)
         category = Category.find_by_id(params[:category])
         
 
@@ -102,6 +104,23 @@ class PostsController < ApplicationController
         else 
             render json: @post.errors, status: :unprocessable_entity
         end
+    end
+
+    def soft_delete
+      
+        post = Post.find_by(id: 1, status: true)
+
+        return render json: { error: "Post not found"}, status: 404 if post.nil?
+
+        if post.update(status: false)
+            render json: { 
+                message: 'Data deleted, but persistent in the database',
+                object_deleted: post
+                }, status: :ok
+        else 
+            render json: @post.errors, status: :unprocessable_entity
+        end
+        
     end
 
 
@@ -146,7 +165,9 @@ class PostsController < ApplicationController
         string_title = "posts.title LIKE '#{params[:title]}'"
         string_cate = "categories.name LIKE '#{params[:category]}'"
     
-        filter_cat_title =  @posts.joins(:category).where(string_cate + " and " + string_title)
+        filter_cat_title =  @posts.joins(:category)
+                                  .where(string_cate)
+                                  .where(string_title)
 
         render json: { 
             message: "Filter to Category and Post title",

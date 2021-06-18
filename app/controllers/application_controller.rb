@@ -1,9 +1,7 @@
 class ApplicationController < ActionController::API
 
     def encode_token(payload)
-        
         JWT.encode payload,"secret",'HS256'
-
     end
 
     def decode_token
@@ -22,7 +20,7 @@ class ApplicationController < ActionController::API
     def authorized
 
         if !request.headers['Authorization']
-            render json: { Message: "No estas autorizado"}, status: :unauthorized
+            render json: { Message: "You aren't authorized"}, status: :unauthorized
         end
 
     end

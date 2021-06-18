@@ -1,4 +1,5 @@
 class CategoriesController < ApplicationController
+    before_action :authorized, except: [:index]
 
     def index 
         @category = Category.all 
@@ -6,7 +7,6 @@ class CategoriesController < ApplicationController
         if @category 
             render json: @category, status: :ok
         end
-         
     end
 
     def show
@@ -15,8 +15,6 @@ class CategoriesController < ApplicationController
     end
 
     def create 
-
-         
         @category = Category.new(name: params[:name])
 
         if @category.save
