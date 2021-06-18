@@ -1,6 +1,9 @@
 class PostsController < ApplicationController
-    before_action :decode_token, only: [:create]
-    # Get Posts
+    before_action :decode_token, only: [:create, :update]
+
+
+
+    # GET FILTER POST
     # /posts?title=TITULO
     # /posts?category=CATEGORIA
     # /posts?titulo=TITULO&category=CATEGORY
@@ -18,10 +21,12 @@ class PostsController < ApplicationController
         return title_filter if params_title  
         return category_filter if params_category 
             
-        # Si no se hay parametros retorna todos los posts
+        # Si no se hay parametros para filtrar retorna todos los posts
         render json: @posts, status: :ok, each_serializer: PostListSerializer
     end
 
+
+    # GET POST ID
     def show
 
         @post = Post.find_by_id(params[:id])
@@ -37,25 +42,72 @@ class PostsController < ApplicationController
          
     end
 
+  
+
+    # CREATE POST AND ASSOCIATION
     def create 
+
+        post = Post.new(params_post)
 
         # Recibo el Id del User por medio del before_action
         user = User.find(@user_id)
-        @category = Category.find_by_id(params[:category]) 
-        @post = Post.new(params_post)
+        post.user = user
+
+        category = Category.find_by_id(params[:category])
+        return render json: { error: "Category not found"}, status: 404 if category.nil?
+        post.category = @category
+        
      
-        @post.user = user 
-        @post.category = @category
- 
-        if @post.save
-            render json: @post, status: :ok
+        if post.save
+            render json: post, status: :ok
+        else 
+            render json: post.errors, status: :unprocessable_entity
         end
     end
 
+
+    # UPDATE POST
     def update 
-        #user = User.find(@user_id)
-        #@category = Category.find()
+
+        # Obtengo los parametros y los busco en mi base
+        post = Post.find_by_id(params[:id])
+        category = Category.find_by_id(params[:category])
+        
+
+        # Si post y category no existen en mi base retorno errores 
+        return render json: { error: "Post not found"}, status: 404 if post.nil?
+        return render json: { error: "Category not found"}, status: 404 if category.nil?
+
+        # Asigno la relacion con categoria
+        post.category = category 
+
+        # Realizo el update
+        if  post.update(params_post)
+            render json: { Status: "ok"}
+        else 
+            render json: category.errors, status: :unprocessable_entity
+        end
+
     end
+
+
+    # DELETE FIRST ITERATION
+    def destroy 
+        post = Post.find_by_id(params[:id])
+
+        return render json: { error: "Post not found"}, status: 404 if post.nil?
+
+        if post.destroy
+            render json: { status: "deleted"}
+        else 
+            render json: @post.errors, status: :unprocessable_entity
+        end
+    end
+
+
+
+
+    ################################################# PRIVATE ############################################################
 
     private
 
