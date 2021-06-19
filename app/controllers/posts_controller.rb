@@ -11,7 +11,7 @@ class PostsController < ApplicationController
 
     def index 
 
-        @posts = Post.all.order("created_at DESC").where("status = true")
+        @posts = Post.all 
 
         # Get Params
         params_title = params[:title]
@@ -107,8 +107,9 @@ class PostsController < ApplicationController
     end
 
     def soft_delete
-      
-        post = Post.find_by(id: 1, status: true)
+        
+
+        post = Post.find_by(id: 19, status: true)
 
         return render json: { error: "Post not found"}, status: 404 if post.nil?
 
@@ -165,9 +166,13 @@ class PostsController < ApplicationController
         string_title = "posts.title LIKE '#{params[:title]}'"
         string_cate = "categories.name LIKE '#{params[:category]}'"
     
-        filter_cat_title =  @posts.joins(:category)
+        filter_cat_title =  @posts.where(status: true)
                                   .where(string_cate)
+                                  .joins(:category).select(:id,:title,:image,:content. )
                                   .where(string_title)
+                                
+                                   
+                                  
 
         render json: { 
             message: "Filter to Category and Post title",
