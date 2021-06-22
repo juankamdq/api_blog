@@ -15,7 +15,7 @@ class PostsController < ApplicationController
 
         # Get Params
         params_title = params[:title]
-        params_category = params[:category]
+        params_category = params[:category] #ADASDSA
  
         # Retorna el post dependiendo el filtro
         return category_title_filter if params_category && params_title
