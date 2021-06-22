@@ -141,10 +141,7 @@ class PostsController < ApplicationController
 
     private
 
-    def params_post
-        params.require(:post).permit(:title, :content, :image)
-    end
-
+    
 
     # FILTRADO POR TITULO
     def title_filter
