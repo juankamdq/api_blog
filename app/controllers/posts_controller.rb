@@ -1,6 +1,6 @@
 class PostsController < ApplicationController
-    before_action :authorized, except: [:index, :show]
-    before_action :decode_token, only: [:create, :update]
+    #before_action :authorized
+    before_action :decode_token 
 
 
 
@@ -11,7 +11,7 @@ class PostsController < ApplicationController
 
     def index 
 
-        @posts = Post.all 
+        @posts = Post.find(@user_id)
 
         # Get Params
         params_title = params[:title]
@@ -30,16 +30,18 @@ class PostsController < ApplicationController
     # GET POST ID
     def show
 
-        @post = Post.find_by(id:params[:id], status: true)
+        params_title_id = params[:id]
+ 
+
+        @post = Post.find_by(id: params_title_id, status: true, user_id: @user_id)
 
         if !@post.nil?
             render json: @post, status: :ok
         else
             render json: { 
-                message: "Post not found",
+                error: "Post not found in User ID #{@user_id || 'XX'}",
                 status: false
-                
-            }
+            }, status: 404
         end
          
     end
@@ -47,16 +49,14 @@ class PostsController < ApplicationController
   
 
     # CREATE POST AND ASSOCIATION
-    def create 
+  def create 
 
-        post = Post.new(params_post)
-
-        # Recibo el Id del User por medio del before_action
         user = User.find(@user_id)
-        post.user = user
-         
+        post = user.posts.build(params_post)
+        
         category = Category.find_by_id(params[:category])
         return render json: { error: "Category not found"}, status: 404 if category.nil?
+         
         post.category = category
         
      
@@ -71,13 +71,16 @@ class PostsController < ApplicationController
     # UPDATE POST
     def update 
 
+        param_post_id = params[:id]
+        param_category_id = params[:category]
+         
         # Obtengo los parametros y los busco en mi base
-        post = Post.find_by(id:params[:id], status: true)
-        category = Category.find_by_id(params[:category])
-        
+        post = Post.find_by(id: param_post_id, user_id: @user_id, status: true) 
 
+        category = Category.find_by_id(param_category_id)
+        
         # Si post y category no existen en mi base retorno errores 
-        return render json: { error: "Post not found"}, status: 404 if post.nil?
+        return render json: { error: "Post not found in User ID #{@user_id}"}, status: 404 if post.nil?
         return render json: { error: "Category not found"}, status: 404 if category.nil?
 
         # Asigno la relacion con categoria
@@ -85,7 +88,10 @@ class PostsController < ApplicationController
 
         # Realizo el update
         if  post.update(params_post)
-            render json: { Status: "ok"}
+            render json: { 
+                message: "Post ID #{post.id} updated",
+                object: post
+            }
         else 
             render json: category.errors, status: :unprocessable_entity
         end
@@ -95,9 +101,12 @@ class PostsController < ApplicationController
 
     # DELETE FIRST ITERATION
     def destroy 
-        post = Post.find_by_id(params[:id])
 
-        return render json: { error: "Post not found"}, status: 404 if post.nil?
+        param_post_id = params[:id]
+
+        post = Post.find_by(id: param_post_id, user_id: @user_id, status: true)
+
+        return render json: { error: "Post not found in User ID #{@user_id}"}, status: 404 if post.nil?
 
         if post.destroy
             render json: { status: "deleted"}
@@ -108,10 +117,11 @@ class PostsController < ApplicationController
 
     def soft_delete
         
+        param_post_id = params[:id]
 
-        post = Post.find_by(id: 19, status: true)
+        post = Post.find_by(id: param_post_id, status: true, user_id: @user_id)
 
-        return render json: { error: "Post not found"}, status: 404 if post.nil?
+        return render json: { error: "Post not found in User ID #{@user_id}" }, status: 404 if post.nil?
 
         if post.update(status: false)
             render json: { 
@@ -168,7 +178,7 @@ class PostsController < ApplicationController
     
         filter_cat_title =  @posts.where(status: true)
                                   .where(string_cate)
-                                  .joins(:category).select(:id,:title,:image,:content. )
+                                  .joins(:category).select(:id,:title,:image,:content)
                                   .where(string_title)
                                 
                                    

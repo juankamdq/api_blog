@@ -7,7 +7,11 @@ class UsersController < ApplicationController
 
         if @user.valid?
            token = encode_token ({ user_id: @user.id})
-           render json: { Status: "ok", Token: token}, status: :create
+           render json: {
+               message: 'User Created',
+               object: @user,
+               Token: token
+               }, status: :created
         else 
             render json: @user.errors 
         end
@@ -23,9 +27,10 @@ class UsersController < ApplicationController
             token = encode_token ({ user_id: @user.id })
             render json: { 
                 Message: "Welcome #{@user.email}",
+                object: @user,
                 Token: token
             }
-
+ 
         else 
             render json: { Message: "Sorry email/password invalid!!!!"}, status: :not_found
         end

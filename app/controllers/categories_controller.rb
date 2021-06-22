@@ -1,5 +1,5 @@
 class CategoriesController < ApplicationController
-    before_action :authorized, except: [:index]
+    #before_action :authorized 
 
     def index 
         @category = Category.all 

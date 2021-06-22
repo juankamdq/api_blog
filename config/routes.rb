@@ -1,6 +1,6 @@
 Rails.application.routes.draw do
   # For details on the DSL available within this file, see https://guides.rubyonrails.org/routing.html
-  resources :posts, except: [:index]
+  resources :posts 
   resources :categories 
   resources :users
   
@@ -10,8 +10,7 @@ Rails.application.routes.draw do
 
 
   #POSTS
-  get '/posts', to: 'posts#index'
-  put '/posts/soft_delete/:id', to: 'posts#soft_delete'
+  post '/posts/soft_delete/:id', to: 'posts#soft_delete'
 
   
 end
