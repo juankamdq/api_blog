@@ -31,7 +31,7 @@ class PostsController < ApplicationController
     def show
 
         params_title_id = params[:id]
- 
+ #adasd
 
         @post = Post.find_by(id: params_title_id, status: true, user_id: @user_id)
 
